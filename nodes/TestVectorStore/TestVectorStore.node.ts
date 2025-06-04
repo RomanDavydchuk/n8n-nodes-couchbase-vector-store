@@ -1,6 +1,4 @@
 import type { Embeddings } from '@langchain/core/embeddings';
-import type { Document } from '@langchain/core/documents';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import type {
 	IExecuteFunctions,
 	INodeExecutionData,
@@ -10,44 +8,8 @@ import type {
 	NodeExecutionWithMetadata,
 	SupplyData,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
-import { createClient } from '@supabase/supabase-js';
-
-async function populateVectorStore(
-	context: IExecuteFunctions | ISupplyDataFunctions,
-	embeddings: Embeddings,
-	documents: Array<Document<Record<string, unknown>>>,
-	itemIndex: number,
-) {
-	const tableName = context.getNodeParameter('tableName', itemIndex, '', {
-		extractValue: true,
-	}) as string;
-	// TODO: add this property
-	const options = context.getNodeParameter('options', itemIndex, {}) as {
-		queryName: string;
-	};
-	const credentials = await context.getCredentials('testVectorStoreApi');
-	const client = createClient(credentials.host as string, credentials.serviceRole as string);
-
-	try {
-		await SupabaseVectorStore.fromDocuments(documents, embeddings, {
-			client,
-			tableName,
-			queryName: options.queryName ?? 'match_documents',
-		});
-	} catch (error) {
-		if ((error as Error).message === 'Error inserting: undefined 404 Not Found') {
-			throw new NodeOperationError(context.getNode(), `Table ${tableName} not found`, {
-				itemIndex,
-				description: 'Please check that the table exists in your vector store',
-			});
-		} else {
-			throw new NodeOperationError(context.getNode(), error as Error, {
-				itemIndex,
-			});
-		}
-	}
-}
+import { NodeConnectionType } from 'n8n-workflow';
+import { handleInsertOperation } from './operations/insert';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -57,7 +19,7 @@ export class TestVectorStore implements INodeType {
 		icon: 'fa:database',
 		iconColor: 'purple', // for visual distinction
 		group: ['transform'],
-		version: [1, 1.1, 1.2],
+		version: 1,
 		defaults: {
 			name: 'Test Vector Store',
 		},
@@ -187,64 +149,16 @@ export class TestVectorStore implements INodeType {
 		this: IExecuteFunctions,
 	): Promise<INodeExecutionData[][] | NodeExecutionWithMetadata[][] | null> {
 		const mode = this.getNodeParameter('mode', 0) as string;
-		// TODO: more operations
-		// probably extract each operation to it's own function at least
-		if (mode !== 'insert') {
-			return [[{ json: {} }]];
-		}
-
 		const embeddings = (await this.getInputConnectionData(
 			NodeConnectionType.AiEmbedding,
 			0,
 		)) as Embeddings;
-		const items = this.getInputData();
-		// TODO: it should be N8nJsonLoader | N8nBinaryLoader | Array<Document<Record<string, unknown>>>
-		// but those types are defined internally and not exposed in the package
-		const documentInput = (await this.getInputConnectionData(
-			NodeConnectionType.AiDocument,
-			0,
-		)) as any;
-		const resultData: INodeExecutionData[] = [];
-		const documentsForEmbedding: Array<Document<Record<string, unknown>>> = [];
-
-		for (let i = 0; i < items.length; i++) {
-			if (this.getExecutionCancelSignal()?.aborted) {
-				break;
-			}
-
-			let processedDocuments: Document<Record<string, unknown>>[] = [];
-			const itemData = items[i];
-			if (!Array.isArray(documentInput)) {
-				// TODO: not type safe, see L140
-				console.log('documentInput is not an array', documentInput);
-				processedDocuments = await documentInput.processItem(itemData, i);
-			} else {
-				console.log('documentInput is an array', documentInput);
-				processedDocuments = documentInput;
-			}
-
-			const serializedDocuments = processedDocuments.map(
-				({ metadata, pageContent }: Document<Record<string, unknown>>) => ({
-					json: { metadata, pageContent },
-					pairedItem: {
-						item: i,
-					},
-				}),
-			);
-
-			resultData.push(...serializedDocuments);
-			documentsForEmbedding.push(...processedDocuments);
+		if (mode === 'insert') {
+			const resultData = await handleInsertOperation(this, embeddings);
+			return [resultData];
 		}
 
-		// TODO: add this property
-		const embeddingBatchSize =
-			(this.getNodeParameter('embeddingBatchSize', 0, 200) as number) ?? 200;
-		for (let i = 0; i < documentsForEmbedding.length; i += embeddingBatchSize) {
-			const nextBatch = documentsForEmbedding.slice(i, i + embeddingBatchSize);
-			await populateVectorStore(this, embeddings, nextBatch, 0);
-		}
-
-		return [resultData];
+		return [[]];
 	}
 
 	async supplyData(this: ISupplyDataFunctions, _itemIndex: number): Promise<SupplyData> {
