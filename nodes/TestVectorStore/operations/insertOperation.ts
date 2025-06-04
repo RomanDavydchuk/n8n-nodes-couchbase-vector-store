@@ -32,7 +32,6 @@ export async function handleInsertOperation(
 		documentsForEmbedding.push(...processedDocuments);
 	}
 
-	// TODO: add this property
 	const embeddingBatchSize =
 		(context.getNodeParameter('embeddingBatchSize', 0, 200) as number) ?? 200;
 	for (let i = 0; i < documentsForEmbedding.length; i += embeddingBatchSize) {

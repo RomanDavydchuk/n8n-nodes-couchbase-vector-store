@@ -14,7 +14,6 @@ export async function populateVectorStore(
 	const tableName = context.getNodeParameter('tableName', itemIndex, '', {
 		extractValue: true,
 	}) as string;
-	// TODO: add this property
 	const options = context.getNodeParameter('options', itemIndex, {}) as {
 		queryName: string;
 	};

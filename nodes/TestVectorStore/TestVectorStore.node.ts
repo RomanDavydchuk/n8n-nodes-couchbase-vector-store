@@ -9,7 +9,9 @@ import type {
 	SupplyData,
 } from 'n8n-workflow';
 import { NodeConnectionType } from 'n8n-workflow';
-import { handleInsertOperation } from './operations/insert';
+import { handleInsertOperation } from './operations/insertOperation';
+import { testTableNameSearch } from './methods/listSearch';
+import { insertDescriptions } from './descriptions/insertDescriptions';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -131,7 +133,6 @@ export class TestVectorStore implements INodeType {
 						name: 'list',
 						type: 'list',
 						typeOptions: {
-							// FIXME:
 							searchListMethod: 'testTableNameSearch',
 						},
 					},
@@ -142,7 +143,14 @@ export class TestVectorStore implements INodeType {
 					},
 				],
 			},
+			...insertDescriptions,
 		],
+	};
+
+	methods = {
+		listSearch: {
+			testTableNameSearch,
+		},
 	};
 
 	async execute(
