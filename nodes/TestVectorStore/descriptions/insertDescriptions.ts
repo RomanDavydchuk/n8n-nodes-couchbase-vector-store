@@ -1,6 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const insertDescriptions: INodeProperties[] = [
+export const insertFields: INodeProperties[] = [
 	{
 		displayName: 'Embedding Batch Size',
 		name: 'embeddingBatchSize',

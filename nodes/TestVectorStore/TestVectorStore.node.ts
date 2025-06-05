@@ -11,7 +11,9 @@ import type {
 import { NodeConnectionType } from 'n8n-workflow';
 import { handleInsertOperation } from './operations/insertOperation';
 import { testTableNameSearch } from './methods/listSearch';
-import { insertDescriptions } from './descriptions/insertDescriptions';
+import { insertFields } from './descriptions/insertDescriptions';
+import { handleLoadOperation } from './operations/loadOperation';
+import { loadFields } from './descriptions/loadDescriptions';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -143,7 +145,8 @@ export class TestVectorStore implements INodeType {
 					},
 				],
 			},
-			...insertDescriptions,
+			...insertFields,
+			...loadFields,
 		],
 	};
 
@@ -163,6 +166,16 @@ export class TestVectorStore implements INodeType {
 		)) as Embeddings;
 		if (mode === 'insert') {
 			const resultData = await handleInsertOperation(this, embeddings);
+			return [resultData];
+		}
+
+		if (mode === 'load') {
+			const items = this.getInputData(0);
+			const resultData: INodeExecutionData[] = [];
+			for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+				const docs = await handleLoadOperation(this, embeddings, itemIndex);
+				resultData.push(...docs);
+			}
 			return [resultData];
 		}
 
