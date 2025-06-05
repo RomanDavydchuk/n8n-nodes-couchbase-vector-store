@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-test-vector-store",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"description": "Test Vector Store as a Community Node",
 	"keywords": [
 		"n8n-community-node-package"
@@ -48,9 +48,11 @@
 		"typescript": "^5.8.2"
 	},
 	"peerDependencies": {
-		"n8n-workflow": "*",
-		"@langchain/core": "0.3.39",
 		"@langchain/community": "0.3.24",
+		"@langchain/core": "0.3.39",
+		"n8n-workflow": "*"
+	},
+	"dependencies": {
 		"@supabase/supabase-js": "2.45.4"
 	}
 }
