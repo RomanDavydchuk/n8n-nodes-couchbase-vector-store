@@ -11,9 +11,11 @@ import type {
 import { NodeConnectionType } from 'n8n-workflow';
 import { handleInsertOperation } from './operations/insertOperation';
 import { testTableNameSearch } from './methods/listSearch';
-import { insertFields } from './descriptions/insertDescriptions';
+import { insertFields } from './descriptions/insertFields';
 import { handleLoadOperation } from './operations/loadOperation';
-import { loadFields } from './descriptions/loadDescriptions';
+import { loadFields } from './descriptions/loadFields';
+import { handleUpdateOperation } from './operations/updateOperation';
+import { updateFields } from './descriptions/updateFields';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -109,17 +111,17 @@ export class TestVectorStore implements INodeType {
 						outputConnectionType: NodeConnectionType.AiVectorStore,
 					},
 					{
-						name: 'Update Documents',
-						value: 'update',
-						description: 'Update documents in vector store by ID',
-						action: 'Update vector store documents',
-					},
-					{
 						name: 'Retrieve Documents (As Tool for AI Agent)',
 						value: 'retrieve-as-tool',
 						description: 'Retrieve documents from vector store to be used as tool with AI nodes',
 						action: 'Retrieve documents for AI Agent as Tool',
 						outputConnectionType: NodeConnectionType.AiTool,
+					},
+					{
+						name: 'Update Documents',
+						value: 'update',
+						description: 'Update documents in vector store by ID',
+						action: 'Update vector store documents',
 					},
 				],
 			},
@@ -147,6 +149,7 @@ export class TestVectorStore implements INodeType {
 			},
 			...insertFields,
 			...loadFields,
+			...updateFields,
 		],
 	};
 
@@ -176,6 +179,11 @@ export class TestVectorStore implements INodeType {
 				const docs = await handleLoadOperation(this, embeddings, itemIndex);
 				resultData.push(...docs);
 			}
+			return [resultData];
+		}
+
+		if (mode === 'update') {
+			const resultData = await handleUpdateOperation(this, embeddings);
 			return [resultData];
 		}
 

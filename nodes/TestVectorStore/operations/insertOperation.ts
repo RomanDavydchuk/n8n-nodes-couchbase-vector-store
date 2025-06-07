@@ -17,7 +17,6 @@ export async function handleInsertOperation(
 	)) as any;
 	const resultData: INodeExecutionData[] = [];
 	const documentsForEmbedding: Array<Document<Record<string, unknown>>> = [];
-
 	for (let i = 0; i < items.length; i++) {
 		if (context.getExecutionCancelSignal()?.aborted) {
 			break;
