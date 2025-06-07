@@ -1,6 +1,6 @@
 import { Embeddings } from '@langchain/core/embeddings';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
-import { getVectorStoreClient } from '../shared/getVectorStoreClient';
+import { getVectorStoreClient } from '../getVectorStoreClient';
 import { getMetadataFiltersValues } from '../shared/getMetadataFiltersValues';
 
 export async function handleLoadOperation(

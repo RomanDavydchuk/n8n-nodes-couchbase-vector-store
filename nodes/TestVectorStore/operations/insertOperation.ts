@@ -2,7 +2,7 @@ import type { Embeddings } from '@langchain/core/embeddings';
 import type { Document } from '@langchain/core/documents';
 import { NodeConnectionType, type IExecuteFunctions, type INodeExecutionData } from 'n8n-workflow';
 import { processDocument } from '../shared/processDocument';
-import { populateVectorStore } from '../shared/populateVectorStore';
+import { populateVectorStore } from '../populateVectorStore';
 
 export async function handleInsertOperation(
 	context: IExecuteFunctions,

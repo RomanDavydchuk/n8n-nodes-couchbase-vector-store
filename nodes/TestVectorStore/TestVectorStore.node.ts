@@ -8,7 +8,7 @@ import type {
 	NodeExecutionWithMetadata,
 	SupplyData,
 } from 'n8n-workflow';
-import { NodeConnectionType } from 'n8n-workflow';
+import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 import { handleInsertOperation } from './operations/insertOperation';
 import { testTableNameSearch } from './methods/listSearch';
 import { insertFields } from './descriptions/insertFields';
@@ -16,6 +16,8 @@ import { handleLoadOperation } from './operations/loadOperation';
 import { loadFields } from './descriptions/loadFields';
 import { handleUpdateOperation } from './operations/updateOperation';
 import { updateFields } from './descriptions/updateFields';
+import { handleRetrieveOperation } from './operations/retrieveOperation';
+import { retrieveFields } from './descriptions/retrieveFields';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -150,6 +152,7 @@ export class TestVectorStore implements INodeType {
 			...insertFields,
 			...loadFields,
 			...updateFields,
+			...retrieveFields,
 		],
 	};
 
@@ -187,12 +190,29 @@ export class TestVectorStore implements INodeType {
 			return [resultData];
 		}
 
-		return [[]];
+		throw new NodeOperationError(
+			this.getNode(),
+			'Only the "load", "update" and "insert" operation modes are supported with execute',
+		);
 	}
 
-	async supplyData(this: ISupplyDataFunctions, _itemIndex: number): Promise<SupplyData> {
-		return {
-			response: {},
-		};
+	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
+		const mode = this.getNodeParameter('mode', 0);
+		const embeddings = (await this.getInputConnectionData(
+			NodeConnectionType.AiEmbedding,
+			0,
+		)) as Embeddings;
+		if (mode === 'retrieve') {
+			return await handleRetrieveOperation(this, embeddings, itemIndex);
+		}
+
+		// if (mode === 'retrieve-as-tool') {
+		// 	return await handleRetrieveAsToolOperation(this, embeddings, itemIndex);
+		// }
+
+		throw new NodeOperationError(
+			this.getNode(),
+			'Only the "retrieve" and "retrieve-as-tool" operation mode is supported to supply data',
+		);
 	}
 }
