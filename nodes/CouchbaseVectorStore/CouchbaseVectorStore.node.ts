@@ -195,7 +195,7 @@ export class CouchbaseVectorStore implements INodeType {
 				name: 'indexName',
 				type: 'string',
 				default: '',
-				placeholder: 'my_index',
+				placeholder: 'vector-index',
 			},
 			...insertFields,
 			...loadFields,

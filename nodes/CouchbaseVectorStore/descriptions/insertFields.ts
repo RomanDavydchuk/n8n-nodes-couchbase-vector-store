@@ -19,15 +19,7 @@ export const insertFields: INodeProperties[] = [
 		type: 'collection',
 		placeholder: 'Add Option',
 		default: {},
-		options: [
-			{
-				displayName: 'Query Name',
-				name: 'queryName',
-				type: 'string',
-				default: 'match_documents',
-				description: 'Name of the query to use for matching documents',
-			},
-		],
+		options: [],
 		displayOptions: {
 			show: {
 				mode: ['insert'],
