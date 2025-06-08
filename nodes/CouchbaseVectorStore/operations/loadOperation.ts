@@ -9,7 +9,7 @@ export async function handleLoadOperation(
 	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
 	const filter = getMetadataFiltersValues(context, itemIndex);
-	const vectorStore = await getVectorStoreClient(context, undefined, embeddings, itemIndex);
+	const vectorStore = await getVectorStoreClient(context, embeddings, itemIndex);
 	const prompt = context.getNodeParameter('prompt', itemIndex) as string;
 	const topK = context.getNodeParameter('topK', itemIndex, 4) as number;
 	const includeDocumentMetadata = context.getNodeParameter(

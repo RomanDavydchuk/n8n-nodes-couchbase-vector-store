@@ -1,5 +1,6 @@
 import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
 
+// TODO: is this required?
 export function getMetadataFiltersValues(
 	ctx: IExecuteFunctions | ISupplyDataFunctions,
 	itemIndex: number,

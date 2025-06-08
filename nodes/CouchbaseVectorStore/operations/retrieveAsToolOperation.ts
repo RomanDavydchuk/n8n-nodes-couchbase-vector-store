@@ -25,7 +25,7 @@ export async function handleRetrieveAsToolOperation(
 		name: toolName,
 		description: toolDescription,
 		func: async (input) => {
-			const vectorStore = await getVectorStoreClient(context, undefined, embeddings, itemIndex);
+			const vectorStore = await getVectorStoreClient(context, embeddings, itemIndex);
 			const embeddedPrompt = await embeddings.embedQuery(input);
 			let documents = await vectorStore.similaritySearchVectorWithScore(
 				embeddedPrompt,

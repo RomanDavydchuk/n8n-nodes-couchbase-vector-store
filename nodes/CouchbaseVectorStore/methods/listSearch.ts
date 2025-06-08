@@ -78,3 +78,5 @@ export async function collectionSearch(
 		})),
 	};
 }
+
+// TODO: Add index search

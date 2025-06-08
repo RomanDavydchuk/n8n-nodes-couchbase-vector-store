@@ -5,7 +5,6 @@ import { CouchbaseVectorStore } from '@langchain/community/vectorstores/couchbas
 
 export async function getVectorStoreClient(
 	context: IExecuteFunctions | ISupplyDataFunctions,
-	_filter: Record<string, never> | undefined,
 	embeddings: Embeddings,
 	itemIndex: number,
 ) {

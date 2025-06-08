@@ -17,7 +17,7 @@ export async function handleUpdateOperation(
 		const documentId = context.getNodeParameter('id', itemIndex, '', {
 			extractValue: true,
 		}) as string;
-		const vectorStore = await getVectorStoreClient(context, undefined, embeddings, itemIndex);
+		const vectorStore = await getVectorStoreClient(context, embeddings, itemIndex);
 		const { processedDocuments, serializedDocuments } = await processDocument(
 			loader,
 			itemData,
