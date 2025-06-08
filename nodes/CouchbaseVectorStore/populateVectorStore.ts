@@ -1,8 +1,8 @@
 import type { Embeddings } from '@langchain/core/embeddings';
 import type { Document } from '@langchain/core/documents';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { Cluster } from 'couchbase';
+import { CouchbaseVectorStore } from '@langchain/community/vectorstores/couchbase';
 
 export async function populateVectorStore(
 	context: IExecuteFunctions | ISupplyDataFunctions,
@@ -10,30 +10,26 @@ export async function populateVectorStore(
 	documents: Array<Document<Record<string, unknown>>>,
 	itemIndex: number,
 ) {
-	const tableName = context.getNodeParameter('tableName', itemIndex, '', {
+	const bucketName = context.getNodeParameter('bucketName', itemIndex, '', {
 		extractValue: true,
 	}) as string;
-	const options = context.getNodeParameter('options', itemIndex, {}) as {
-		queryName: string;
-	};
-	// const credentials = await context.getCredentials('couchbaseApi');
-
-	try {
-		await SupabaseVectorStore.fromDocuments(documents, embeddings, {
-			client: null,
-			tableName,
-			queryName: options.queryName ?? 'match_documents',
-		});
-	} catch (error) {
-		if ((error as Error).message === 'Error inserting: undefined 404 Not Found') {
-			throw new NodeOperationError(context.getNode(), `Table ${tableName} not found`, {
-				itemIndex,
-				description: 'Please check that the table exists in your vector store',
-			});
-		} else {
-			throw new NodeOperationError(context.getNode(), error as Error, {
-				itemIndex,
-			});
-		}
-	}
+	const scopeName = context.getNodeParameter('scopeName', itemIndex, '', {
+		extractValue: true,
+	}) as string;
+	const collectionName = context.getNodeParameter('collectionName', itemIndex, '', {
+		extractValue: true,
+	}) as string;
+	const indexName = context.getNodeParameter('indexName', itemIndex, '') as string;
+	const credentials = await context.getCredentials('couchbaseApi');
+	const cluster = await Cluster.connect(credentials.connectionString as string, {
+		username: credentials.username as string,
+		password: credentials.password as string,
+	});
+	await CouchbaseVectorStore.fromDocuments(documents, embeddings, {
+		cluster,
+		bucketName,
+		scopeName,
+		collectionName,
+		indexName,
+	});
 }
