@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-test-vector-store",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Test Vector Store as a Community Node",
 	"keywords": [
 		"n8n-community-node-package"
