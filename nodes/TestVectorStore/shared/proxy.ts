@@ -52,59 +52,53 @@ export function proxy<T extends VectorStore | Tool>(
 	return new Proxy(originalInstance, {
 		get: (target, prop) => {
 			let connectionType: NodeConnectionType | undefined;
-			if (originalInstance instanceof VectorStore) {
-				if (prop === 'similaritySearch' && 'similaritySearch' in target) {
-					return async (
-						query: string,
-						k?: number,
-						filter?: any, // TODO: it was `BiquadFilterType | undefined`, not sure what it is
-						_callbacks?: Callbacks | undefined,
-					): Promise<Document[]> => {
-						connectionType = NodeConnectionType.AiVectorStore;
-						const { index } = executeFunctions.addInputData(connectionType, [
-							[{ json: { query, k, filter } }],
-						]);
-						const response = (await callMethodAsync.call(target, {
-							executeFunctions,
-							connectionType,
-							currentNodeRunIndex: index,
-							method: target[prop],
-							arguments: [query, k, filter, _callbacks],
-						})) as Array<Document<Record<string, any>>>;
-						executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
+			if (prop === 'similaritySearch' && 'similaritySearch' in target) {
+				return async (
+					query: string,
+					k?: number,
+					filter?: any, // TODO: it was `BiquadFilterType | undefined`, not sure what it is
+					_callbacks?: Callbacks | undefined,
+				): Promise<Document[]> => {
+					connectionType = NodeConnectionType.AiVectorStore;
+					const { index } = executeFunctions.addInputData(connectionType, [
+						[{ json: { query, k, filter } }],
+					]);
+					const response = (await callMethodAsync.call(target, {
+						executeFunctions,
+						connectionType,
+						currentNodeRunIndex: index,
+						method: target[prop],
+						arguments: [query, k, filter, _callbacks],
+					})) as Array<Document<Record<string, any>>>;
+					executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
 
+					return response;
+				};
+			} else if (prop === '_call' && '_call' in target) {
+				return async (query: string): Promise<string> => {
+					connectionType = NodeConnectionType.AiTool;
+					const inputData: IDataObject = { query };
+					if (target.metadata?.isFromToolkit) {
+						inputData.tool = {
+							name: target.name,
+							description: target.description,
+						};
+					}
+					const { index } = executeFunctions.addInputData(connectionType, [[{ json: inputData }]]);
+					const response = (await callMethodAsync.call(target, {
+						executeFunctions,
+						connectionType,
+						currentNodeRunIndex: index,
+						method: target[prop],
+						arguments: [query],
+					})) as string;
+					executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
+					if (typeof response === 'string') {
 						return response;
-					};
-				}
-			} else {
-				if (prop === '_call' && '_call' in target) {
-					return async (query: string): Promise<string> => {
-						connectionType = NodeConnectionType.AiTool;
-						const inputData: IDataObject = { query };
-						if (target.metadata?.isFromToolkit) {
-							inputData.tool = {
-								name: target.name,
-								description: target.description,
-							};
-						}
-						const { index } = executeFunctions.addInputData(connectionType, [
-							[{ json: inputData }],
-						]);
-						const response = (await callMethodAsync.call(target, {
-							executeFunctions,
-							connectionType,
-							currentNodeRunIndex: index,
-							method: target[prop],
-							arguments: [query],
-						})) as string;
-						executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
-						if (typeof response === 'string') {
-							return response;
-						}
+					}
 
-						return JSON.stringify(response);
-					};
-				}
+					return JSON.stringify(response);
+				};
 			}
 
 			return (target as any)[prop];
