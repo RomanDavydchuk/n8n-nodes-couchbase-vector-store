@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-test-vector-store",
-	"version": "0.1.4",
-	"description": "Test Vector Store as a Community Node",
+	"version": "0.1.5",
+	"description": "Couchbase Vector Store Community Node",
 	"keywords": [
 		"n8n-community-node-package"
 	],

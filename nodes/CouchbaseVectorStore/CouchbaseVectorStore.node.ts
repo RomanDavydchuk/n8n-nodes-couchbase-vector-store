@@ -26,9 +26,7 @@ export class CouchbaseVectorStore implements INodeType {
 		displayName: 'Couchbase Vector Store',
 		name: 'couchbaseVectorStore',
 		description: 'Couchbase Vector Store Node',
-		// TODO:
-		icon: 'fa:database',
-		iconColor: 'purple',
+		icon: 'file:couchbase.svg',
 		group: ['transform'],
 		version: 1,
 		defaults: {

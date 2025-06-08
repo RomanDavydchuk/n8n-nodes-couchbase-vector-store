@@ -5,6 +5,7 @@ export class CouchbaseApi implements ICredentialType {
 
 	displayName = 'Couchbase API';
 
+	// TODO:
 	documentationUrl = 'http://TODO';
 
 	properties: INodeProperties[] = [
