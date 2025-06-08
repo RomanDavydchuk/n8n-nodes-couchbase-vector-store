@@ -18,6 +18,8 @@ import { handleUpdateOperation } from './operations/updateOperation';
 import { updateFields } from './descriptions/updateFields';
 import { handleRetrieveOperation } from './operations/retrieveOperation';
 import { retrieveFields } from './descriptions/retrieveFields';
+import { handleRetrieveAsToolOperation } from './operations/retrieveAsToolOperation';
+import { retrieveAsToolFields } from './descriptions/retrieveAsToolFields';
 
 export class TestVectorStore implements INodeType {
 	description: INodeTypeDescription = {
@@ -35,14 +37,8 @@ export class TestVectorStore implements INodeType {
 			categories: ['AI'],
 			subcategories: {
 				AI: ['Vector Stores', 'Tools', 'Root Nodes'],
+				'Vector Stores': ['Other Vector Stores'],
 				Tools: ['Other Tools'],
-			},
-			resources: {
-				primaryDocumentation: [
-					{
-						url: 'testvectorstore',
-					},
-				],
 			},
 		},
 		credentials: [
@@ -148,11 +144,17 @@ export class TestVectorStore implements INodeType {
 						type: 'string',
 					},
 				],
+				displayOptions: {
+					show: {
+						mode: ['insert', 'load', 'update', 'retrieve'], // 'retrieve-as-tool' has a different order of fields
+					},
+				},
 			},
 			...insertFields,
 			...loadFields,
 			...updateFields,
 			...retrieveFields,
+			...retrieveAsToolFields,
 		],
 	};
 
@@ -206,9 +208,9 @@ export class TestVectorStore implements INodeType {
 			return await handleRetrieveOperation(this, embeddings, itemIndex);
 		}
 
-		// if (mode === 'retrieve-as-tool') {
-		// 	return await handleRetrieveAsToolOperation(this, embeddings, itemIndex);
-		// }
+		if (mode === 'retrieve-as-tool') {
+			return await handleRetrieveAsToolOperation(this, embeddings, itemIndex);
+		}
 
 		throw new NodeOperationError(
 			this.getNode(),

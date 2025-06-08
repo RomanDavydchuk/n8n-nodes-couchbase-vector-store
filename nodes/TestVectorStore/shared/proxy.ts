@@ -1,7 +1,8 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
 import type { Document } from '@langchain/core/documents';
+import { Tool } from '@langchain/core/tools';
 import { VectorStore } from '@langchain/core/vectorstores';
-import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
+import type { IDataObject, IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
 import { NodeOperationError, NodeConnectionType, parseErrorMetadata } from 'n8n-workflow';
 
 export async function callMethodAsync<T>(
@@ -18,11 +19,9 @@ export async function callMethodAsync<T>(
 		return await parameters.method.call(this, ...parameters.arguments);
 	} catch (e) {
 		const connectedNode = parameters.executeFunctions.getNode();
-
 		const error = new NodeOperationError(connectedNode, e, {
 			functionality: 'configuration-node',
 		});
-
 		const metadata = parseErrorMetadata(error);
 		parameters.executeFunctions.addOutputData(
 			parameters.connectionType,
@@ -30,11 +29,11 @@ export async function callMethodAsync<T>(
 			error,
 			metadata,
 		);
-
 		if (error.message) {
 			if (!error.description) {
 				error.description = error.message;
 			}
+
 			throw error;
 		}
 
@@ -46,37 +45,66 @@ export async function callMethodAsync<T>(
 	}
 }
 
-export function proxy(
-	originalInstance: VectorStore,
+export function proxy<T extends VectorStore | Tool>(
+	originalInstance: T,
 	executeFunctions: IExecuteFunctions | ISupplyDataFunctions,
-): VectorStore {
+): T {
 	return new Proxy(originalInstance, {
 		get: (target, prop) => {
 			let connectionType: NodeConnectionType | undefined;
-			if (prop === 'similaritySearch' && 'similaritySearch' in target) {
-				return async (
-					query: string,
-					k?: number,
-					filter?: any, // TODO: not sure what this type was
-					_callbacks?: Callbacks | undefined,
-				): Promise<Document[]> => {
-					connectionType = NodeConnectionType.AiVectorStore;
-					const { index } = executeFunctions.addInputData(connectionType, [
-						[{ json: { query, k, filter } }],
-					]);
+			if (originalInstance instanceof VectorStore) {
+				if (prop === 'similaritySearch' && 'similaritySearch' in target) {
+					return async (
+						query: string,
+						k?: number,
+						filter?: any, // TODO: it was `BiquadFilterType | undefined`, not sure what it is
+						_callbacks?: Callbacks | undefined,
+					): Promise<Document[]> => {
+						connectionType = NodeConnectionType.AiVectorStore;
+						const { index } = executeFunctions.addInputData(connectionType, [
+							[{ json: { query, k, filter } }],
+						]);
+						const response = (await callMethodAsync.call(target, {
+							executeFunctions,
+							connectionType,
+							currentNodeRunIndex: index,
+							method: target[prop],
+							arguments: [query, k, filter, _callbacks],
+						})) as Array<Document<Record<string, any>>>;
+						executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
 
-					const response = (await callMethodAsync.call(target, {
-						executeFunctions,
-						connectionType,
-						currentNodeRunIndex: index,
-						method: target[prop],
-						arguments: [query, k, filter, _callbacks],
-					})) as Array<Document<Record<string, any>>>;
+						return response;
+					};
+				}
+			} else {
+				if (prop === '_call' && '_call' in target) {
+					return async (query: string): Promise<string> => {
+						connectionType = NodeConnectionType.AiTool;
+						const inputData: IDataObject = { query };
+						if (target.metadata?.isFromToolkit) {
+							inputData.tool = {
+								name: target.name,
+								description: target.description,
+							};
+						}
+						const { index } = executeFunctions.addInputData(connectionType, [
+							[{ json: inputData }],
+						]);
+						const response = (await callMethodAsync.call(target, {
+							executeFunctions,
+							connectionType,
+							currentNodeRunIndex: index,
+							method: target[prop],
+							arguments: [query],
+						})) as string;
+						executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
+						if (typeof response === 'string') {
+							return response;
+						}
 
-					executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
-
-					return response;
-				};
+						return JSON.stringify(response);
+					};
+				}
 			}
 
 			return (target as any)[prop];
