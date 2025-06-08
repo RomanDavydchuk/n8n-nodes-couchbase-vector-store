@@ -3,7 +3,6 @@ import type { Document } from '@langchain/core/documents';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { createClient } from '@supabase/supabase-js';
 
 export async function populateVectorStore(
 	context: IExecuteFunctions | ISupplyDataFunctions,
@@ -17,12 +16,11 @@ export async function populateVectorStore(
 	const options = context.getNodeParameter('options', itemIndex, {}) as {
 		queryName: string;
 	};
-	const credentials = await context.getCredentials('testVectorStoreApi');
-	const client = createClient(credentials.host as string, credentials.serviceRole as string);
+	// const credentials = await context.getCredentials('couchbaseApi');
 
 	try {
 		await SupabaseVectorStore.fromDocuments(documents, embeddings, {
-			client,
+			client: null,
 			tableName,
 			queryName: options.queryName ?? 'match_documents',
 		});

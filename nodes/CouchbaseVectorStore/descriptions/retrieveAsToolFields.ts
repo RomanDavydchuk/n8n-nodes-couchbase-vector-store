@@ -18,33 +18,6 @@ export const retrieveAsToolFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Table Name',
-		name: 'tableName',
-		type: 'resourceLocator',
-		default: { mode: 'list', value: '' },
-		required: true,
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				typeOptions: {
-					searchListMethod: 'testTableNameSearch',
-				},
-			},
-			{
-				displayName: 'ID',
-				name: 'id',
-				type: 'string',
-			},
-		],
-		displayOptions: {
-			show: {
-				mode: ['retrieve-as-tool'],
-			},
-		},
-	},
-	{
 		displayName: 'Limit',
 		name: 'topK',
 		type: 'number',

@@ -10,7 +10,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 import { handleInsertOperation } from './operations/insertOperation';
-import { testTableNameSearch } from './methods/listSearch';
+import { bucketSearch, collectionSearch, scopeSearch } from './methods/listSearch';
 import { insertFields } from './descriptions/insertFields';
 import { handleLoadOperation } from './operations/loadOperation';
 import { loadFields } from './descriptions/loadFields';
@@ -21,17 +21,18 @@ import { retrieveFields } from './descriptions/retrieveFields';
 import { handleRetrieveAsToolOperation } from './operations/retrieveAsToolOperation';
 import { retrieveAsToolFields } from './descriptions/retrieveAsToolFields';
 
-export class TestVectorStore implements INodeType {
+export class CouchbaseVectorStore implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Test Vector Store',
-		name: 'testVectorStore',
-		description: 'Test Vector Store Node',
+		displayName: 'Couchbase Vector Store',
+		name: 'couchbaseVectorStore',
+		description: 'Couchbase Vector Store Node',
+		// TODO:
 		icon: 'fa:database',
-		iconColor: 'purple', // for visual distinction
+		iconColor: 'purple',
 		group: ['transform'],
 		version: 1,
 		defaults: {
-			name: 'Test Vector Store',
+			name: 'Couchbase Vector Store',
 		},
 		codex: {
 			categories: ['AI'],
@@ -43,7 +44,7 @@ export class TestVectorStore implements INodeType {
 		},
 		credentials: [
 			{
-				name: 'testVectorStoreApi',
+				name: 'couchbaseApi',
 				required: true,
 			},
 		],
@@ -124,8 +125,8 @@ export class TestVectorStore implements INodeType {
 				],
 			},
 			{
-				displayName: 'Table Name',
-				name: 'tableName',
+				displayName: 'Bucket Name',
+				name: 'bucketName',
 				type: 'resourceLocator',
 				default: { mode: 'list', value: '' },
 				required: true,
@@ -135,7 +136,7 @@ export class TestVectorStore implements INodeType {
 						name: 'list',
 						type: 'list',
 						typeOptions: {
-							searchListMethod: 'testTableNameSearch',
+							searchListMethod: 'bucketSearch',
 						},
 					},
 					{
@@ -144,11 +145,57 @@ export class TestVectorStore implements INodeType {
 						type: 'string',
 					},
 				],
-				displayOptions: {
-					show: {
-						mode: ['insert', 'load', 'update', 'retrieve'], // 'retrieve-as-tool' has a different order of fields
+			},
+			{
+				displayName: 'Scope Name',
+				name: 'scopeName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'scopeSearch',
+						},
 					},
-				},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+			},
+			{
+				displayName: 'Collection Name',
+				name: 'collectionName',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				required: true,
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'collectionSearch',
+						},
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+					},
+				],
+			},
+			{
+				displayName: 'Index Name',
+				name: 'indexName',
+				type: 'string',
+				default: '',
+				placeholder: 'my_index',
 			},
 			...insertFields,
 			...loadFields,
@@ -160,7 +207,9 @@ export class TestVectorStore implements INodeType {
 
 	methods = {
 		listSearch: {
-			testTableNameSearch,
+			bucketSearch,
+			scopeSearch,
+			collectionSearch,
 		},
 	};
 

@@ -1,6 +1,5 @@
 import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
 import { Embeddings } from '@langchain/core/embeddings';
-import { createClient } from '@supabase/supabase-js';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 
 export async function getVectorStoreClient(
@@ -9,16 +8,15 @@ export async function getVectorStoreClient(
 	embeddings: Embeddings,
 	itemIndex: number,
 ) {
-	const tableName = context.getNodeParameter('tableName', itemIndex, '', {
+	const tableName = context.getNodeParameter('bucketName', itemIndex, '', {
 		extractValue: true,
 	}) as string;
 	const options = context.getNodeParameter('options', itemIndex, {}) as {
 		queryName: string;
 	};
-	const credentials = await context.getCredentials('testVectorStoreApi');
-	const client = createClient(credentials.host as string, credentials.serviceRole as string);
+	// const credentials = await context.getCredentials('couchbaseApi');
 	return await SupabaseVectorStore.fromExistingIndex(embeddings, {
-		client,
+		client: null,
 		tableName,
 		queryName: options.queryName ?? 'match_documents',
 		filter,
