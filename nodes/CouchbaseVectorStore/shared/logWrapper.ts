@@ -45,7 +45,7 @@ export async function callMethodAsync<T>(
 	}
 }
 
-export function proxy<T extends VectorStore | Tool>(
+export function logWrapper<T extends VectorStore | Tool>(
 	originalInstance: T,
 	executeFunctions: IExecuteFunctions | ISupplyDataFunctions,
 ): T {
@@ -71,7 +71,7 @@ export function proxy<T extends VectorStore | Tool>(
 						arguments: [query, k, filter, _callbacks],
 					})) as Array<Document<Record<string, any>>>;
 					executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
-
+					// TODO: logAiEvent?
 					return response;
 				};
 			} else if (prop === '_call' && '_call' in target) {
@@ -93,6 +93,7 @@ export function proxy<T extends VectorStore | Tool>(
 						arguments: [query],
 					})) as string;
 					executeFunctions.addOutputData(connectionType, index, [[{ json: { response } }]]);
+					// TODO: logAiEvent?
 					if (typeof response === 'string') {
 						return response;
 					}

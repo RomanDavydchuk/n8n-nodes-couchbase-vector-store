@@ -8,7 +8,7 @@ import {
 	type ISupplyDataFunctions,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getMetadataFiltersValues } from './getMetadataFiltersValues';
+import { getMetadataFiltersValues } from './helpers';
 
 export class N8nJsonLoader {
 	constructor(

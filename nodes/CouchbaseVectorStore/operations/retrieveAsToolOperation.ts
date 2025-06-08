@@ -1,10 +1,9 @@
 import type { ISupplyDataFunctions, SupplyData } from 'n8n-workflow';
 import type { Embeddings } from '@langchain/core/embeddings';
 import { DynamicTool } from 'langchain/tools';
-import { getMetadataFiltersValues } from '../shared/getMetadataFiltersValues';
-import { getVectorStoreClient } from '../getVectorStoreClient';
-import { nodeNameToToolName } from '../shared/nodeNameToToolName';
-import { proxy } from '../shared/proxy';
+import { getMetadataFiltersValues, nodeNameToToolName } from '../shared/helpers';
+import { getVectorStoreClient } from '../core/getVectorStoreClient';
+import { logWrapper } from '../shared/logWrapper';
 
 export async function handleRetrieveAsToolOperation(
 	context: ISupplyDataFunctions,
@@ -46,6 +45,6 @@ export async function handleRetrieveAsToolOperation(
 		},
 	});
 	return {
-		response: proxy(vectorStoreTool, context),
+		response: logWrapper(vectorStoreTool, context),
 	};
 }

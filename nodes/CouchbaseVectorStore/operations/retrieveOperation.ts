@@ -1,7 +1,7 @@
 import type { Embeddings } from '@langchain/core/embeddings';
 import { type ISupplyDataFunctions, type SupplyData } from 'n8n-workflow';
-import { getVectorStoreClient } from '../getVectorStoreClient';
-import { proxy } from '../shared/proxy';
+import { getVectorStoreClient } from '../core/getVectorStoreClient';
+import { logWrapper } from '../shared/logWrapper';
 
 export async function handleRetrieveOperation(
 	context: ISupplyDataFunctions,
@@ -10,6 +10,6 @@ export async function handleRetrieveOperation(
 ): Promise<SupplyData> {
 	const vectorStore = await getVectorStoreClient(context, embeddings, itemIndex);
 	return {
-		response: proxy(vectorStore, context),
+		response: logWrapper(vectorStore, context),
 	};
 }

@@ -1,4 +1,4 @@
-import type { IExecuteFunctions, ISupplyDataFunctions } from 'n8n-workflow';
+import type { IExecuteFunctions, INode, ISupplyDataFunctions } from 'n8n-workflow';
 
 // TODO: is this required?
 export function getMetadataFiltersValues(
@@ -26,4 +26,8 @@ export function getMetadataFiltersValues(
 	}
 
 	return undefined;
+}
+
+export function nodeNameToToolName(node: INode): string {
+	return node.name.replace(/[\s.?!=+#@&*()[\]{}:;,<>\/\\'"^%$]/g, '_').replace(/_+/g, '_');
 }

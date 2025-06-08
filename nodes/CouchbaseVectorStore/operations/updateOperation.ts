@@ -1,7 +1,7 @@
 import type { Embeddings } from '@langchain/core/embeddings';
 import type { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { getVectorStoreClient } from '../getVectorStoreClient';
+import { getVectorStoreClient } from '../core/getVectorStoreClient';
 import { processDocument } from '../shared/processDocument';
 import { N8nJsonLoader } from '../shared/N8nJsonLoader';
 
