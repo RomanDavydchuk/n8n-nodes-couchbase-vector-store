@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-test-vector-store",
-	"version": "0.1.5",
+	"version": "0.1.7",
 	"description": "Couchbase Vector Store Community Node",
 	"keywords": [
 		"n8n-community-node-package"
@@ -51,9 +51,7 @@
 		"@langchain/community": "0.3.24",
 		"@langchain/core": "0.3.39",
 		"langchain": "0.3.11",
+		"couchbase": "4.5.0",
 		"n8n-workflow": "*"
-	},
-	"dependencies": {
-		"couchbase": "4.5.0"
 	}
 }
