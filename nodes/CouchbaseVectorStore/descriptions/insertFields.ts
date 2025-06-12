@@ -13,18 +13,5 @@ export const insertFields: INodeProperties[] = [
 			},
 		},
 	},
-	// TODO:
-	{
-		displayName: 'Options',
-		name: 'options',
-		type: 'collection',
-		placeholder: 'Add Option',
-		default: {},
-		options: [],
-		displayOptions: {
-			show: {
-				mode: ['insert'],
-			},
-		},
-	},
+	// TODO: Options
 ];

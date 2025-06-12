@@ -39,18 +39,5 @@ export const loadFields: INodeProperties[] = [
 			},
 		},
 	},
-	// TODO:
-	{
-		displayName: 'Options',
-		name: 'options',
-		type: 'collection',
-		placeholder: 'Add Option',
-		default: {},
-		options: [],
-		displayOptions: {
-			show: {
-				mode: ['load'],
-			},
-		},
-	},
+	// TODO: Options
 ];
